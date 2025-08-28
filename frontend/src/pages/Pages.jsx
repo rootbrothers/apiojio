@@ -69,7 +69,7 @@ export function PaymentsPage() {
         {Object.keys(node.data).map((k) => (
           <div key={k} className="grid gap-1">
             <Label>{k}</Label>
-            <Input value={node.data[k]} onChange={(e) => save({ [path]: { enabled: node.enabled, data: { **node.data, [k]: e.target.value } } })} placeholder={`Enter ${k}`} />
+            <Input value={node.data[k]} onChange={(e) => save({ [path]: { enabled: node.enabled, data: { ...node.data, [k]: e.target.value } } })} placeholder={`Enter ${k}`} />
           </div>
         ))}
       </CardContent>
