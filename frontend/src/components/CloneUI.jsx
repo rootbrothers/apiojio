@@ -275,14 +275,53 @@ export function CartDrawer() {
         </SheetContent>
       </Sheet>
 
-      <CheckoutDialog open={checkoutOpen} onOpenChange={setCheckoutOpen} amount={totals.amount} />
+      <CheckoutDialog open={checkoutOpen} onOpenChange={setCheckoutOpen} amount={totals.amount} items={items} />
     </>
   );
 }
 
-function CheckoutDialog({ open, onOpenChange, amount }) {
+function CheckoutDialog({ open, onOpenChange, amount, items }) {
   const { clear } = useCart();
+  const { toast } = useToast();
   const [method, setMethod] = useState("stripe");
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+  const API = `${BACKEND_URL}/api`;
+
+  const pay = async () => {
+    try {
+      const { data } = await axios.post(`${API}/checkout/session`, {
+        items: items.map((i) => ({ id: i.id, title: i.title, price: i.price, qty: i.qty })),
+        method,
+        currency: "USD",
+        success_url: window.location.origin + "/success",
+        cancel_url: window.location.origin + "/cancel",
+      });
+
+      if (data.status === "redirect" && data.redirect_url) {
+        window.location.href = data.redirect_url;
+        return;
+      }
+      if (data.status === "placeholder") {
+        toast({ title: "Gateway ready", description: `Keys added. Real redirect will be enabled next.` });
+        clear();
+        onOpenChange(false);
+        return;
+      }
+      if (data.status === "not_configured") {
+        toast({ title: "Gateway not configured", description: "Add keys in Payments page to enable live checkout." });
+        return;
+      }
+      if (data.status === "mock") {
+        toast({ title: `Order placed (Mock)`, description: `Paid via ${method}. Amount $${amount.toFixed(2)}` });
+        clear();
+        onOpenChange(false);
+        return;
+      }
+      toast({ title: "Unexpected response", description: JSON.stringify(data) });
+    } catch (e) {
+      toast({ title: "Checkout failed", description: String(e) });
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -299,7 +338,7 @@ function CheckoutDialog({ open, onOpenChange, amount }) {
               <label className="flex items-center gap-2 rounded-md border p-2"><RadioGroupItem value="paypal" id="pm-pp" /> <span>PayPal</span></label>
               <label className="flex items-center gap-2 rounded-md border p-2"><RadioGroupItem value="cod" id="pm-cod" /> <span>Manual/UPI</span></label>
             </RadioGroup>
-            <div className="text-xs text-muted-foreground">Configure gateways in Payments page to go live. This checkout is mocked.</div>
+            <div className="text-xs text-muted-foreground">Configure gateways in Payments page to go live.</div>
           </div>
           <div className="rounded-md border p-3 text-sm">
             <div className="flex items-center justify-between"><span>Subtotal</span><span>${amount.toFixed(2)}</span></div>
@@ -309,7 +348,7 @@ function CheckoutDialog({ open, onOpenChange, amount }) {
         </div>
         <DialogFooter>
           <Button variant="secondary" onClick={() => onOpenChange(false)}>Close</Button>
-          <Button onClick={() => { alert(`Mock payment via ${method} for $${amount.toFixed(2)}`); clear(); onOpenChange(false); }}>Pay (Mock)</Button>
+          <Button onClick={pay}>Pay</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
