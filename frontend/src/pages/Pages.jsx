@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Link, useLocation, useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Input } from "../components/ui/input";
@@ -9,28 +9,33 @@ import { Textarea } from "../components/ui/textarea";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { Separator } from "../components/ui/separator";
+import { Switch } from "../components/ui/switch";
 import { useCart } from "../context/CartContext";
-import { hero, metrics, oneOffPackages, subscriptions, testimonials, blogPosts, faqs, platforms } from "../mock/mock";
+import { hero, metrics, oneOffPackages, subscriptions, testimonials, blogPosts, faqs, platforms, defaultGateways } from "../mock/mock";
 import { PackagesTabs, ProductCard, SubscriptionCard, WhyChoose } from "../components/CloneUI";
-import { CheckCircle2, Star } from "lucide-react";
+import { Star } from "lucide-react";
 
 export function HomePage() {
   const { add } = useCart();
+  useEffect(() => {
+    // force dark theme like reference site
+    document.documentElement.classList.add("dark");
+  }, []);
 
   return (
     <main>
       {/* Hero */}
-      <section className="border-b bg-gradient-to-b from-background to-accent/20">
-        <div className="mx-auto max-w-6xl px-4 py-16 md:py-24">
+      <section className="border-b bg-gradient-to-b from-background to-accent/10">
+        <div className="mx-auto max-w-6xl px-4 py-12 md:py-16">
           <div className="grid items-center gap-8 md:grid-cols-2">
             <div>
-              <h1 className="text-3xl font-semibold tracking-tight md:text-5xl">{hero.title}</h1>
-              <p className="mt-4 text-muted-foreground">{hero.subtitle}</p>
+              <h1 className="text-3xl md:text-5xl font-black leading-tight">
+                <span className="bg-gradient-to-r from-sky-400 to-violet-400 bg-clip-text text-transparent whitespace-pre-line">{hero.title}</span>
+              </h1>
+              <p className="mt-4 text-muted-foreground max-w-prose">{hero.subtitle}</p>
               <div className="mt-6 flex flex-wrap gap-2">
                 {hero.bullets.map((b) => (
-                  <span key={b.label} className="rounded-full border px-3 py-1 text-xs text-muted-foreground">
-                    {b.label}
-                  </span>
+                  <span key={b.label} className="rounded-full border px-3 py-1 text-xs text-muted-foreground">{b.label}</span>
                 ))}
               </div>
               <div className="mt-6 flex gap-3">
@@ -56,7 +61,7 @@ export function HomePage() {
 
       {/* Packages preview */}
       <section className="mx-auto max-w-6xl px-4 py-12">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-4">
           <h2 className="text-2xl font-semibold tracking-tight">Choose Your Growth Plan</h2>
         </div>
         <Tabs defaultValue="packages">
@@ -69,9 +74,7 @@ export function HomePage() {
           </TabsContent>
           <TabsContent value="subs">
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {subscriptions.map((plan) => (
-                <SubscriptionCard key={plan.id} plan={plan} onAdd={add} />)
-              )}
+              {subscriptions.map((plan) => (<SubscriptionCard key={plan.id} plan={plan} onAdd={add} />))}
             </div>
           </TabsContent>
         </Tabs>
@@ -89,9 +92,7 @@ export function HomePage() {
                   <div className="flex items-center justify-between">
                     <div className="font-medium">{t.name}</div>
                     <div className="flex items-center gap-1 text-yellow-500">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} size={14} fill={i < t.rating ? "currentColor" : "none"} />
-                      ))}
+                      {[...Array(5)].map((_, i) => (<Star key={i} size={14} fill={i < t.rating ? "currentColor" : "none"} />))}
                     </div>
                   </div>
                   <div className="text-xs text-muted-foreground">{t.niche}</div>
@@ -162,11 +163,13 @@ export function ProductsPage() {
     return g;
   }, []);
 
+  useEffect(() => { document.documentElement.classList.add("dark"); }, []);
+
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="mb-6">
         <h1 className="text-3xl font-semibold tracking-tight">Social Media Growth Packages</h1>
-        <p className="text-sm text-muted-foreground">Premium Instagram, TikTok, YouTube, Twitter (X) & Facebook services with instant delivery.</p>
+        <p className="text-sm text-muted-foreground">Premium Instagram, TikTok, YouTube, Twitter (X), Facebook, Telegram and more.</p>
       </div>
 
       <div className="mb-6 rounded-md border bg-card p-4 text-sm">
@@ -182,9 +185,7 @@ export function ProductsPage() {
             </Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {(grouped[p.key] || []).slice(0, 6).map((item) => (
-              <ProductCard key={item.id} item={item} onAdd={add} />
-            ))}
+            {(grouped[p.key] || []).slice(0, 9).map((item) => (<ProductCard key={item.id} item={item} onAdd={add} />))}
           </div>
         </section>
       ))}
@@ -200,14 +201,8 @@ export function ProductsPage() {
                 <CardTitle className="text-base">{t.name} • {t.niche}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
-                <div className="flex items-center justify-between">
-                  <div>Before</div>
-                  <div className="font-semibold">{t.before.toLocaleString()}</div>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>After</div>
-                  <div className="font-semibold">{t.after.toLocaleString()}</div>
-                </div>
+                <div className="flex items-center justify-between"><div>Before</div><div className="font-semibold">{t.before.toLocaleString()}</div></div>
+                <div className="flex items-center justify-between"><div>After</div><div className="font-semibold">{t.after.toLocaleString()}</div></div>
                 <div className="text-xs text-muted-foreground">Package: {t.package}</div>
               </CardContent>
             </Card>
@@ -220,6 +215,7 @@ export function ProductsPage() {
 
 export function SubscribePage() {
   const { add } = useCart();
+  useEffect(() => { document.documentElement.classList.add("dark"); }, []);
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <div className="max-w-2xl">
@@ -229,9 +225,7 @@ export function SubscribePage() {
       </div>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {subscriptions.map((plan) => (
-          <SubscriptionCard key={plan.id} plan={plan} onAdd={(p) => add(p)} />
-        ))}
+        {subscriptions.map((plan) => (<SubscriptionCard key={plan.id} plan={plan} onAdd={(p) => add(p)} />))}
       </div>
 
       <section className="mt-12 grid gap-4 md:grid-cols-3">
@@ -259,9 +253,8 @@ export function FreeTestPage() {
   const [platform, setPlatform] = useState("instagram");
   const [handle, setHandle] = useState("");
   const [sample, setSample] = useState("likes");
-  const [history, setHistory] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("free.tests") || "[]"); } catch { return []; }
-  });
+  const [history, setHistory] = useState(() => { try { return JSON.parse(localStorage.getItem("free.tests") || "[]"); } catch { return []; } });
+  useEffect(() => { document.documentElement.classList.add("dark"); }, []);
 
   const submit = () => {
     if (!handle) return alert("Please enter your profile link or username");
@@ -282,9 +275,7 @@ export function FreeTestPage() {
           <Select value={platform} onValueChange={setPlatform}>
             <SelectTrigger><SelectValue placeholder="Select platform" /></SelectTrigger>
             <SelectContent>
-              {platforms.map((p) => (
-                <SelectItem key={p.key} value={p.key}>{p.name}</SelectItem>
-              ))}
+              {platforms.map((p) => (<SelectItem key={p.key} value={p.key}>{p.name}</SelectItem>))}
             </SelectContent>
           </Select>
         </div>
@@ -300,6 +291,7 @@ export function FreeTestPage() {
               <SelectItem value="likes">Likes</SelectItem>
               <SelectItem value="followers">Followers</SelectItem>
               <SelectItem value="views">Views</SelectItem>
+              <SelectItem value="comments">Comments</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -309,22 +301,9 @@ export function FreeTestPage() {
       <Separator className="my-8" />
       <h2 className="text-xl font-semibold">Your Recent Free Tests</h2>
       <div className="mt-4 grid gap-3">
-        {history.length === 0 && (
-          <div className="text-sm text-muted-foreground">No free tests yet.</div>
-        )}
+        {history.length === 0 && (<div className="text-sm text-muted-foreground">No free tests yet.</div>)}
         {history.map((h) => (
-          <Card key={h.id}>
-            <CardContent className="py-4 text-sm">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <div className="font-medium">{h.platform.toUpperCase()} • {h.sample}</div>
-                  <div className="text-xs text-muted-foreground">{h.handle}</div>
-                </div>
-                <div className="text-xs">{new Date(h.ts).toLocaleString()}</div>
-                <div className="text-xs text-green-600">{h.status}</div>
-              </div>
-            </CardContent>
-          </Card>
+          <Card key={h.id}><CardContent className="py-4 text-sm"><div className="flex flex-wrap items-center justify-between gap-2"><div><div className="font-medium">{h.platform.toUpperCase()} • {h.sample}</div><div className="text-xs text-muted-foreground">{h.handle}</div></div><div className="text-xs">{new Date(h.ts).toLocaleString()}</div><div className="text-xs text-green-600">{h.status}</div></div></CardContent></Card>
         ))}
       </div>
     </main>
@@ -333,6 +312,7 @@ export function FreeTestPage() {
 
 export function BlogPage() {
   const [openId, setOpenId] = useState(null);
+  useEffect(() => { document.documentElement.classList.add("dark"); }, []);
   return (
     <main className="mx-auto max-w-6xl px-4 py-10">
       <h1 className="text-3xl font-semibold tracking-tight">Blog</h1>
@@ -340,20 +320,12 @@ export function BlogPage() {
       <div className="mt-6 grid gap-4 md:grid-cols-3">
         {blogPosts.map((b) => (
           <Card key={b.id} className="flex flex-col">
-            <CardHeader>
-              <CardTitle className="text-base">{b.title}</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm text-muted-foreground flex-1">
-              {b.excerpt}
-            </CardContent>
+            <CardHeader><CardTitle className="text-base">{b.title}</CardTitle></CardHeader>
+            <CardContent className="text-sm text-muted-foreground flex-1">{b.excerpt}</CardContent>
             <div className="px-6 pb-4 text-xs text-muted-foreground">{b.author} • {b.date}</div>
             <div className="px-6 pb-6">
-              <Button size="sm" variant="secondary" onClick={() => setOpenId(openId === b.id ? null : b.id)}>
-                {openId === b.id ? "Hide" : "Read More"}
-              </Button>
-              {openId === b.id && (
-                <div className="mt-3 text-sm">Full article content is mocked for now. We can wire CMS or markdown later.</div>
-              )}
+              <Button size="sm" variant="secondary" onClick={() => setOpenId(openId === b.id ? null : b.id)}>{openId === b.id ? "Hide" : "Read More"}</Button>
+              {openId === b.id && (<div className="mt-3 text-sm">Full article content is mocked for now. We can wire CMS or markdown later.</div>)}
             </div>
           </Card>
         ))}
@@ -366,9 +338,8 @@ export function ContactPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
-  const [sent, setSent] = useState(() => {
-    try { return JSON.parse(localStorage.getItem("contact.submissions") || "[]"); } catch { return []; }
-  });
+  const [sent, setSent] = useState(() => { try { return JSON.parse(localStorage.getItem("contact.submissions") || "[]"); } catch { return []; } });
+  useEffect(() => { document.documentElement.classList.add("dark"); }, []);
 
   const submit = () => {
     if (!name || !email || !message) return alert("Please complete all fields");
@@ -385,18 +356,9 @@ export function ContactPage() {
       <p className="text-sm text-muted-foreground">We typically respond within a few hours.</p>
 
       <div className="mt-6 grid gap-4">
-        <div className="grid gap-2">
-          <Label>Name</Label>
-          <Input value={name} onChange={(e) => setName(e.target.value)} />
-        </div>
-        <div className="grid gap-2">
-          <Label>Email</Label>
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-        </div>
-        <div className="grid gap-2">
-          <Label>Message</Label>
-          <Textarea rows={5} value={message} onChange={(e) => setMessage(e.target.value)} />
-        </div>
+        <div className="grid gap-2"><Label>Name</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+        <div className="grid gap-2"><Label>Email</Label><Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} /></div>
+        <div className="grid gap-2"><Label>Message</Label><Textarea rows={5} value={message} onChange={(e) => setMessage(e.target.value)} /></div>
         <Button onClick={submit}>Send Message (Mock)</Button>
       </div>
 
@@ -405,17 +367,64 @@ export function ContactPage() {
       <div className="mt-4 grid gap-3">
         {sent.length === 0 && <div className="text-sm text-muted-foreground">No messages yet.</div>}
         {sent.map((s) => (
-          <Card key={s.id}>
-            <CardContent className="py-4 text-sm">
+          <Card key={s.id}><CardContent className="py-4 text-sm"><div className="flex items-center justify-between"><div className="font-medium">{s.name} • {s.email}</div><div className="text-xs text-muted-foreground">{new Date(s.ts).toLocaleString()}</div></div><div className="mt-2 text-muted-foreground">{s.message}</div></CardContent></Card>
+        ))}
+      </div>
+    </main>
+  );
+}
+
+export function PaymentsPage() {
+  const [gateways, setGateways] = useState(() => {
+    try { return JSON.parse(localStorage.getItem("payments.gateways")) || defaultGateways; } catch { return defaultGateways; }
+  });
+  useEffect(() => { document.documentElement.classList.add("dark"); }, []);
+
+  const update = (idx, field, value) => {
+    const next = gateways.map((g, i) => (i === idx ? { ...g, [field]: value } : g));
+    setGateways(next);
+    localStorage.setItem("payments.gateways", JSON.stringify(next));
+  };
+  const updateField = (idx, fk, value) => {
+    const next = gateways.map((g, i) => {
+      if (i !== idx) return g;
+      const data = { ...(g.data || {}), [fk]: value };
+      return { ...g, data };
+    });
+    setGateways(next);
+    localStorage.setItem("payments.gateways", JSON.stringify(next));
+  };
+
+  return (
+    <main className="mx-auto max-w-4xl px-4 py-10">
+      <h1 className="text-3xl font-semibold tracking-tight">Payment Settings</h1>
+      <p className="text-sm text-muted-foreground">Enable gateways like SSLCommerz, Stripe or PayPal and add keys (stored locally for demo). We will wire secure backend storage next.</p>
+
+      <div className="mt-6 grid gap-4">
+        {gateways.map((g, idx) => (
+          <Card key={g.key}>
+            <CardHeader>
               <div className="flex items-center justify-between">
-                <div className="font-medium">{s.name} • {s.email}</div>
-                <div className="text-xs text-muted-foreground">{new Date(s.ts).toLocaleString()}</div>
+                <CardTitle className="text-base">{g.name}</CardTitle>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-muted-foreground">Enabled</span>
+                  <Switch checked={g.enabled} onCheckedChange={(v) => update(idx, "enabled", v)} />
+                </div>
               </div>
-              <div className="mt-2 text-muted-foreground">{s.message}</div>
+            </CardHeader>
+            <CardContent className="grid gap-3">
+              {g.fields.map((f) => (
+                <div key={f.k} className="grid gap-1">
+                  <Label>{f.l}</Label>
+                  <Input value={g.data?.[f.k] || ""} onChange={(e) => updateField(idx, f.k, e.target.value)} placeholder={`Enter ${f.l}`} />
+                </div>
+              ))}
             </CardContent>
           </Card>
         ))}
       </div>
+
+      <div className="mt-6 text-sm text-muted-foreground">Note: These settings are mocked and saved in your browser only. For production, keys will be stored securely in backend env and DB.</div>
     </main>
   );
 }

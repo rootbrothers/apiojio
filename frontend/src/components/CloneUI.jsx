@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
@@ -7,9 +7,12 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui
 import { Input } from "./ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Separator } from "./ui/separator";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "./ui/dialog";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { Label } from "./ui/label";
 import { useCart } from "../context/CartContext";
 import { platforms } from "../mock/mock";
-import { ShoppingCart, Search, CheckCircle2, Zap, Shield, Users, Percent } from "lucide-react";
+import { ShoppingCart, Search, CheckCircle2, Zap, Shield, Users, Percent, CreditCard, Cog } from "lucide-react";
 
 export function Header() {
   const { totals, setOpen } = useCart();
@@ -22,22 +25,23 @@ export function Header() {
     { to: "/products#case-studies", label: "Case Studies" },
     { to: "/blog", label: "Blog" },
     { to: "/contact", label: "Contact" },
+    { to: "/payments", label: "Payments" },
   ];
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-4">
         <Link to="/" className="font-semibold tracking-tight text-lg">
-          Popular<span className="text-primary">SMM</span>
+          Popular<span className="text-primary"> SMM</span>
         </Link>
-        <nav className="hidden md:flex items-center gap-4 text-sm">
+        <nav className="hidden md:flex items-center gap-2 text-sm">
           {nav.map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               className={({ isActive }) =>
                 `px-2 py-1 rounded-md hover:bg-accent hover:text-accent-foreground ${
-                  (isActive || location.hash && n.to.includes(location.hash)) ? "bg-accent" : ""
+                  (isActive || (location.hash && n.to.includes(location.hash))) ? "bg-accent" : ""
                 }`
               }
             >
@@ -76,18 +80,14 @@ export function Footer() {
       <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 px-4 py-10 md:grid-cols-4">
         <div>
           <div className="mb-2 font-semibold text-lg">PopularSMM</div>
-          <p className="text-sm text-muted-foreground">
-            Premium social growth services with instant delivery and 24/7 support.
-          </p>
+          <p className="text-sm text-muted-foreground">Premium social growth services with instant delivery and 24/7 support.</p>
         </div>
         <div>
           <div className="mb-2 font-semibold">Services</div>
           <ul className="space-y-2 text-sm">
             {platforms.map((p) => (
               <li key={p.key}>
-                <Link to={`/products?platform=${p.key}`} className="hover:underline">
-                  {p.name}
-                </Link>
+                <Link to={`/products?platform=${p.key}`} className="hover:underline">{p.name}</Link>
               </li>
             ))}
           </ul>
@@ -110,9 +110,7 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="border-t py-6 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} PopularSMM (Clone). All rights reserved.
-      </div>
+      <div className="border-t py-6 text-center text-xs text-muted-foreground">© {new Date().getFullYear()} PopularSMM (Clone). All rights reserved.</div>
     </footer>
   );
 }
@@ -168,9 +166,7 @@ export function SubscriptionCard({ plan, onAdd }) {
         ))}
       </CardContent>
       <CardFooter>
-        <Button className="w-full" onClick={() => onAdd({ id: plan.id, title: plan.name + " Subscription", price: plan.price })}>
-          {plan.cta || "Start Growing"}
-        </Button>
+        <Button className="w-full" onClick={() => onAdd({ id: plan.id, title: plan.name + " Subscription", price: plan.price })}>{plan.cta || "Start Growing"}</Button>
       </CardFooter>
     </Card>
   );
@@ -199,10 +195,12 @@ export function WhyChoose() {
 export function PackagesTabs({ packages, onAdd }) {
   const categories = [
     { key: "instagram", label: "Instagram" },
-    { key: "tiktok", label: "TikTok" },
     { key: "youtube", label: "YouTube" },
-    { key: "twitter", label: "Twitter" },
     { key: "facebook", label: "Facebook" },
+    { key: "tiktok", label: "TikTok" },
+    { key: "twitter", label: "Twitter" },
+    { key: "telegram", label: "Telegram" },
+    { key: "others", label: "Other Platforms" },
   ];
   return (
     <Tabs defaultValue="instagram" className="w-full">
@@ -214,7 +212,7 @@ export function PackagesTabs({ packages, onAdd }) {
       {categories.map((c) => (
         <TabsContent key={c.key} value={c.key} className="mt-4">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {packages.filter((p) => p.platform === c.key).slice(0, 6).map((item) => (
+            {packages.filter((p) => p.platform === c.key).slice(0, 9).map((item) => (
               <ProductCard key={item.id} item={item} onAdd={onAdd} />
             ))}
           </div>
@@ -226,48 +224,92 @@ export function PackagesTabs({ packages, onAdd }) {
 
 export function CartDrawer() {
   const { items, totals, remove, inc, dec, clear, open, setOpen } = useCart();
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+
   return (
-    <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger asChild>{/* handled from header button */}</SheetTrigger>
-      <SheetContent side="right" className="w-[380px] sm:w-[420px]">
-        <SheetHeader>
-          <SheetTitle>Shopping Cart</SheetTitle>
-        </SheetHeader>
-        <div className="mt-4 flex h-[70vh] flex-col">
-          <div className="flex-1 space-y-3 overflow-auto pr-3">
-            {items.length === 0 && (
-              <div className="text-sm text-muted-foreground">Your cart is empty. Browse packages to boost your growth!</div>
-            )}
-            {items.map((it) => (
-              <div key={it.id} className="rounded-md border p-3">
-                <div className="flex items-start justify-between gap-3">
-                  <div>
-                    <div className="font-medium leading-tight">{it.title}</div>
-                    <div className="text-xs text-muted-foreground">${it.price?.toFixed(2)} • Qty {it.qty}</div>
+    <>
+      <Sheet open={open} onOpenChange={setOpen}>
+        <SheetTrigger asChild>{/* handled from header button */}</SheetTrigger>
+        <SheetContent side="right" className="w-[380px] sm:w-[420px]">
+          <SheetHeader>
+            <SheetTitle>Shopping Cart</SheetTitle>
+          </SheetHeader>
+          <div className="mt-4 flex h-[70vh] flex-col">
+            <div className="flex-1 space-y-3 overflow-auto pr-3">
+              {items.length === 0 && (
+                <div className="text-sm text-muted-foreground">Your cart is empty. Browse packages to boost your growth!</div>
+              )}
+              {items.map((it) => (
+                <div key={it.id} className="rounded-md border p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <div className="font-medium leading-tight">{it.title}</div>
+                      <div className="text-xs text-muted-foreground">${it.price?.toFixed(2)} • Qty {it.qty}</div>
+                    </div>
+                    <button onClick={() => remove(it.id)} className="text-xs text-muted-foreground hover:underline">Remove</button>
                   </div>
-                  <button onClick={() => remove(it.id)} className="text-xs text-muted-foreground hover:underline">Remove</button>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Button size="sm" variant="outline" onClick={() => dec(it.id)}>-</Button>
+                    <div className="text-sm w-6 text-center">{it.qty}</div>
+                    <Button size="sm" variant="outline" onClick={() => inc(it.id)}>+</Button>
+                  </div>
                 </div>
-                <div className="mt-2 flex items-center gap-2">
-                  <Button size="sm" variant="outline" onClick={() => dec(it.id)}>-</Button>
-                  <div className="text-sm w-6 text-center">{it.qty}</div>
-                  <Button size="sm" variant="outline" onClick={() => inc(it.id)}>+</Button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <Separator className="my-3" />
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-sm">
-              <div>Total</div>
-              <div className="font-semibold">${totals.amount.toFixed(2)}</div>
+              ))}
             </div>
-            <Button className="w-full" disabled={items.length === 0}>Checkout (Mock)</Button>
-            {items.length > 0 && (
-              <Button className="w-full" variant="outline" onClick={clear}>Clear Cart</Button>
-            )}
+            <Separator className="my-3" />
+            <div className="space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <div>Total</div>
+                <div className="font-semibold">${totals.amount.toFixed(2)}</div>
+              </div>
+              <Button className="w-full" disabled={items.length === 0} onClick={() => setCheckoutOpen(true)}>
+                <CreditCard className="mr-2" size={16}/> Checkout
+              </Button>
+              {items.length > 0 && (
+                <Button className="w-full" variant="outline" onClick={clear}>Clear Cart</Button>
+              )}
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      <CheckoutDialog open={checkoutOpen} onOpenChange={setCheckoutOpen} amount={totals.amount} />
+    </>
+  );
+}
+
+function CheckoutDialog({ open, onOpenChange, amount }) {
+  const { clear } = useCart();
+  const [method, setMethod] = useState("stripe");
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>Checkout</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4">
+          <div className="grid gap-2">
+            <Label>Payment Method</Label>
+            <RadioGroup value={method} onValueChange={setMethod} className="grid grid-cols-2 gap-2">
+              <label className="flex items-center gap-2 rounded-md border p-2"><RadioGroupItem value="stripe" id="pm-stripe" /> <span>Stripe</span></label>
+              <label className="flex items-center gap-2 rounded-md border p-2"><RadioGroupItem value="sslcommerz" id="pm-ssl" /> <span>SSLCommerz</span></label>
+              <label className="flex items-center gap-2 rounded-md border p-2"><RadioGroupItem value="paypal" id="pm-pp" /> <span>PayPal</span></label>
+              <label className="flex items-center gap-2 rounded-md border p-2"><RadioGroupItem value="cod" id="pm-cod" /> <span>Manual/UPI</span></label>
+            </RadioGroup>
+            <div className="text-xs text-muted-foreground">Configure gateways in Payments page to go live. This checkout is mocked.</div>
+          </div>
+          <div className="rounded-md border p-3 text-sm">
+            <div className="flex items-center justify-between"><span>Subtotal</span><span>${amount.toFixed(2)}</span></div>
+            <div className="flex items-center justify-between"><span>Fees</span><span>$0.00</span></div>
+            <div className="mt-2 flex items-center justify-between font-semibold"><span>Total</span><span>${amount.toFixed(2)}</span></div>
           </div>
         </div>
-      </SheetContent>
-    </Sheet>
+        <DialogFooter>
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>Close</Button>
+          <Button onClick={() => { alert(`Mock payment via ${method} for $${amount.toFixed(2)}`); clear(); onOpenChange(false); }}>Pay (Mock)</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

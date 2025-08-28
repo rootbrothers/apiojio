@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import "./App.css";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { HomePage, ProductsPage, SubscribePage, FreeTestPage, BlogPage, ContactPage } from "./pages/Pages";
+import { HomePage, ProductsPage, SubscribePage, FreeTestPage, BlogPage, ContactPage, PaymentsPage } from "./pages/Pages";
 import { Header, Footer, CartDrawer } from "./components/CloneUI";
 import { Toaster } from "./components/ui/toaster";
 import { CartProvider } from "./context/CartContext";
@@ -51,6 +51,7 @@ function AppShell() {
         <Route path="/free-test" element={<FreeTestPage />} />
         <Route path="/blog" element={<BlogPage />} />
         <Route path="/contact" element={<ContactPage />} />
+        <Route path="/payments" element={<PaymentsPage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
       <Footer />
