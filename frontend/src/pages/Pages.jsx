@@ -58,12 +58,12 @@ export function HomePage() {
       <section className="mx-auto max-w-6xl px-4 py-12">
         <div className="mb-6 flex items-center justify-between">
           <h2 className="text-2xl font-semibold tracking-tight">Choose Your Growth Plan</h2>
+        </div>
+        <Tabs defaultValue="packages">
           <TabsList>
             <TabsTrigger value="packages" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">One-Off</TabsTrigger>
             <TabsTrigger value="subs" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Subscriptions</TabsTrigger>
           </TabsList>
-        </div>
-        <Tabs defaultValue="packages">
           <TabsContent value="packages">
             <PackagesTabs packages={oneOffPackages} onAdd={add} />
           </TabsContent>
