@@ -106,7 +106,7 @@ def test_update_payment_settings():
             data = response.json()
             stripe_data = data.get('stripe', {})
             if (stripe_data.get('enabled') == True and 
-                stripe_data.get('data', {}).get('publishableKey') == "pk_test_123456" and
+                stripe_data.get('data', {}).get('publishableKey') == "pk_test_123456789" and
                 stripe_data.get('data', {}).get('secretKey') == "sk_test_987654321"):
                 print("✅ Stripe settings updated successfully")
                 return True
