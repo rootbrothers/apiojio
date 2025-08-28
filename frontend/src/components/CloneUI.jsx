@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
+import axios from "axios";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -11,6 +12,7 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { Label } from "./ui/label";
 import { useCart } from "../context/CartContext";
+import { useToast } from "../hooks/use-toast";
 import { platforms } from "../mock/mock";
 import { ShoppingCart, Search, CheckCircle2, Zap, Shield, Users, Percent, CreditCard, Cog } from "lucide-react";
 
